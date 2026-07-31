@@ -111,15 +111,15 @@
     border: 1px solid rgba(255, 255, 255, 0.85);
 }
 
-/* CALL STACK LIST (CONVEX CARDS) */
 .stack-list {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: 12px;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 6px;
     flex: 1;
-    justify-content: flex-end;
+    min-height: 0;
 }
 
 .stack-frame-card {

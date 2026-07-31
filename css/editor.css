@@ -41,7 +41,7 @@
 
 .CodeMirror {
     height: 100% !important;
-    min-height: 280px !important;
+    min-height: 100px !important;
     font-family: var(--font-code) !important;
     font-size: 0.92rem !important;
     line-height: 1.6 !important;
@@ -50,7 +50,38 @@
 }
 
 .CodeMirror-scroll {
-    min-height: 280px !important;
+    min-height: 100px !important;
+    overflow-y: auto !important;
+}
+
+/* VISIBLE CURSOR BLINKING CARET */
+.CodeMirror-cursor,
+.cm-s-dracula .CodeMirror-cursor,
+.cm-s-dracula.CodeMirror .CodeMirror-cursor {
+    border-left: 2.5px solid #2563eb !important;
+    visibility: visible !important;
+    z-index: 10 !important;
+}
+
+.CodeMirror-focused .CodeMirror-cursor {
+    border-left: 2.5px solid #2563eb !important;
+    visibility: visible !important;
+}
+
+/* HIGH CONTRAST SELECTION HIGHLIGHT */
+.CodeMirror-selected,
+.cm-s-dracula .CodeMirror-selected,
+.cm-s-dracula.CodeMirror .CodeMirror-selected,
+.CodeMirror-line::selection,
+.CodeMirror-line > span::selection,
+.CodeMirror-line > span > span::selection {
+    background: rgba(37, 99, 235, 0.28) !important;
+    color: #0f172a !important;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+    background: rgba(37, 99, 235, 0.38) !important;
+    color: #0f172a !important;
 }
 
 .CodeMirror-gutters {

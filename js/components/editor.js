@@ -122,7 +122,11 @@ export class CodeEditorController {
         if (lineNum > 0 && lineNum <= this.editor.lineCount()) {
             const lineIndex = lineNum - 1;
             this.activeLineHandle = this.editor.addLineClass(lineIndex, 'background', 'active-execution-line');
-            this.editor.scrollIntoView({ line: lineIndex, ch: 0 }, 80);
+            
+            // Only scroll into view when stepping through code, not while user is actively typing
+            if (!this.editor.hasFocus()) {
+                this.editor.scrollIntoView({ line: lineIndex, ch: 0 }, 80);
+            }
         }
     }
 

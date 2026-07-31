@@ -25,7 +25,9 @@ export function renderStackAndHeap(snapshot) {
     if (stack.length === 0) {
         stackContainer.innerHTML = `<div class="empty-state-card">Call stack is empty</div>`;
     } else {
-        stackContainer.innerHTML = stack.map((frame, idx) => {
+        const reversedStack = [...stack].reverse();
+        stackContainer.innerHTML = reversedStack.map((frame, idx) => {
+            const isTop = idx === 0;
             const scopeEntries = Object.entries(frame.scope || {}).filter(
                 ([k, v]) => v !== undefined && typeof v !== 'function' && !k.startsWith('__')
             );
@@ -41,15 +43,14 @@ export function renderStackAndHeap(snapshot) {
                 return `<span class="frame-var-chip"><span class="k">${k}:</span> <span class="v">${displayVal}</span></span>`;
             }).join('');
 
-            const isTop = idx === stack.length - 1;
             return `
-                <div class="stack-frame-card ${isTop ? 'top-frame' : ''}" style="${isTop ? 'border-left-color: #00f2fe;' : ''}">
+                <div class="stack-frame-card ${isTop ? 'top-frame' : ''}" style="${isTop ? 'border-left-color: #0284c7; box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);' : ''}">
                     <div class="stack-frame-header">
-                        <span class="func-name">${frame.name}</span>
+                        <span class="func-name">${frame.name} ${isTop ? '<span style="font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#0284c7;color:#fff;margin-left:6px;">TOP</span>' : ''}</span>
                         <span class="func-line">Line ${frame.line}</span>
                     </div>
                     <div class="frame-vars">
-                        ${varChips || '<span style="font-size:0.75rem;color:#5c6b73;">no local vars</span>'}
+                        ${varChips || '<span style="font-size:0.75rem;color:#64748b;">no local vars</span>'}
                     </div>
                 </div>
             `;
