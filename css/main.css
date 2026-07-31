@@ -631,3 +631,96 @@ body.standalone-page {
         gap: 8px;
     }
 }
+
+
+/* ==========================================
+   EDUCATIONAL MODAL & TOOLTIPS
+   ========================================== */
+.edu-tooltip {
+    margin-left: 8px;
+    color: var(--primary-blue);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+    font-size: 0.9em;
+}
+.edu-tooltip:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    color: var(--accent-purple);
+}
+
+.edu-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(221, 227, 236, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+.edu-modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.edu-modal-box {
+    background: var(--bg-main);
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 12px 12px 30px #b8c1d0, -12px -12px 30px #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    overflow: hidden;
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.edu-modal-overlay.hidden .edu-modal-box {
+    transform: translateY(20px);
+}
+.edu-modal-header {
+    background: var(--neu-convex-dome);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+.edu-modal-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.edu-modal-title i {
+    color: var(--primary-blue);
+}
+.edu-modal-content {
+    padding: 24px;
+    font-family: var(--font-main);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.edu-modal-content p {
+    margin-bottom: 14px;
+}
+.edu-modal-content strong {
+    color: var(--text-dark);
+    font-weight: 700;
+}
+.edu-modal-content .highlight-box {
+    background: var(--bg-dark);
+    padding: 12px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--neu-shadow-inset);
+    border-left: 4px solid var(--primary-blue);
+    margin-bottom: 14px;
+    font-size: 0.9rem;
+}
+

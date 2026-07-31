@@ -11,6 +11,7 @@ import { renderArraySnapshot } from './visualizers/arraySnapshot.js';
 import { renderEventLoop } from './visualizers/eventLoop.js';
 import { renderGraphVisualizer } from './visualizers/graphVisualizer.js';
 import { renderConsoleAndScope } from './visualizers/consoleView.js';
+import { initEducationalTooltips } from './components/educational.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize CodeMirror Editor
@@ -22,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Initialize Section Resizers
     initResizers(editorController);
+
+    // 4. Initialize Educational Tooltips
+    initEducationalTooltips();
 
     // 4. Listen to Step Updates from State Store and render all visualizers
     appState.on('stepUpdate', ({ step, snapshot }) => {

@@ -189,6 +189,7 @@
                 <div class="panel-header sub-header">
                     <div class="panel-title">
                         <i class="fa-solid fa-layer-group"></i> Active Scope Inspector
+                        <i class="fa-solid fa-circle-question edu-tooltip" data-topic="scope" title="What is Scope?"></i>
                     </div>
                 </div>
                 <div class="panel-body scope-body">
@@ -226,6 +227,7 @@
                             <div class="memory-column call-stack-column">
                                 <div class="section-title">
                                     <i class="fa-solid fa-bars-staggered"></i> Call Stack
+                                    <i class="fa-solid fa-circle-question edu-tooltip" data-topic="call-stack" title="What is the Call Stack?"></i>
                                     <span id="stack-count-badge" class="count-badge">0</span>
                                 </div>
                                 <div id="call-stack-container" class="stack-list">
@@ -240,6 +242,7 @@
                             <div class="memory-column heap-column">
                                 <div class="section-title">
                                     <i class="fa-solid fa-cubes"></i> Heap Memory & References
+                                    <i class="fa-solid fa-circle-question edu-tooltip" data-topic="heap" title="What is the Heap?"></i>
                                     <span id="heap-count-badge" class="count-badge">0 objects</span>
                                 </div>
                                 <div id="heap-memory-container" class="heap-grid">
@@ -386,6 +389,19 @@
                 </div>
             </div>
         </footer>
+    </div>
+
+    <!-- EDUCATIONAL MODAL -->
+    <div id="edu-modal" class="edu-modal-overlay hidden">
+        <div class="edu-modal-box">
+            <div class="edu-modal-header">
+                <div class="edu-modal-title"><i class="fa-solid fa-graduation-cap"></i> <span id="edu-modal-title-text">Concept Name</span></div>
+                <button id="edu-modal-close" class="btn btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="edu-modal-content" class="edu-modal-content">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
     </div>
 
     <!-- CodeMirror Libraries -->
