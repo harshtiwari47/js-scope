@@ -1,0 +1,410 @@
+/* ==========================================================================
+   MAIN CSS - JS-Scope Visualizer Neumorphic Design System (Light #dde3ec)
+   Convex Dome Gradient Edition & Draggable Section Resizers
+   ========================================================================== */
+
+:root {
+    /* Color Palette & Neumorphic Base */
+    --bg-dark: #dde3ec;
+    --bg-panel: #dde3ec;
+    --bg-panel-border: rgba(255, 255, 255, 0.8);
+    --bg-card: #dde3ec;
+    
+    /* Neumorphic Shadow Tokens (Dist: 14px, Blur: 36px, Intensity: 7) */
+    --neu-shadow-raised: 14px 14px 36px #b5becc, -14px -14px 36px #ffffff;
+    --neu-shadow-flat: 10px 10px 24px #b8c1d0, -10px -10px 24px #ffffff;
+    --neu-shadow-sm: 6px 6px 16px #bcc5d4, -6px -6px 16px #ffffff;
+    --neu-shadow-inset: inset 6px 6px 14px #b8c1d0, inset -6px -6px 14px #ffffff;
+    --neu-shadow-inset-deep: inset 8px 8px 20px #b0b9c8, inset -8px -8px 20px #ffffff;
+    
+    /* Convex Dome Gradient Surfaces */
+    --neu-convex-dome: linear-gradient(145deg, #eff6ff 0%, #c4cbd7 100%);
+    --neu-convex-dome-hover: linear-gradient(145deg, #f5f9ff 0%, #cbd2e0 100%);
+    --neu-convex-primary: linear-gradient(145deg, #4f87ff 0%, #1d4ed8 100%);
+    --neu-surface-pressed: linear-gradient(145deg, #c4cbd7 0%, #eff6ff 100%);
+    
+    /* Vibrant Contrast Accents */
+    --primary-cyan: #0284c7;
+    --primary-blue: #2563eb;
+    --primary-gradient: linear-gradient(145deg, #3b82f6 0%, #1d4ed8 100%);
+    --accent-purple: #7c3aed;
+    --accent-pink: #db2777;
+    --accent-orange: #ea580c;
+    --accent-yellow: #d97706;
+    --accent-green: #059669;
+
+    /* Visualizer State Colors */
+    --color-compare: #d97706;
+    --color-swap: #dc2626;
+    --color-pivot: #0284c7;
+    --color-sorted: #059669;
+    --color-stack: #2563eb;
+    --color-heap: #7c3aed;
+
+    /* Text Colors (Neumorphic Charcoal Contrast) */
+    --text-main: #3c4858;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+
+    /* Typography */
+    --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-code: 'Fira Code', monospace;
+    --font-heading: 'Outfit', sans-serif;
+
+    /* Elevation & Radii */
+    --border-radius-sm: 12px;
+    --border-radius-md: 20px;
+    --border-radius-lg: 24px;
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset & Box Sizing */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.9) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(181, 190, 204, 0.6) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    height: 100vh;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+/* App Container Layout */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* MAIN WORKSPACE GRID */
+.main-workspace {
+    display: grid;
+    grid-template-columns: 460px 10px 1fr;
+    gap: 0;
+    padding: 18px 20px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+    .main-workspace {
+        grid-template-columns: 400px 10px 1fr;
+    }
+}
+
+/* WORKSPACE PANELS (CONVEX DOME EXTRUDED CARDS) */
+.workspace-panel {
+    background: var(--neu-convex-dome);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--neu-shadow-raised);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: var(--transition-normal);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(221, 227, 236, 0.1) 100%);
+    border-bottom: 1px solid rgba(181, 190, 204, 0.35);
+}
+
+.panel-header.sub-header {
+    padding: 10px 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(221, 227, 236, 0.1) 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.panel-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panel-title i {
+    color: var(--primary-blue);
+}
+
+.panel-body {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* DRAGGABLE SECTION RESIZER GUTTERS */
+.resizer-gutter {
+    position: relative;
+    user-select: none;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.resizer-vertical {
+    width: 10px;
+    cursor: col-resize;
+    background: transparent;
+}
+
+.resizer-vertical::after {
+    content: '';
+    width: 4px;
+    height: 38px;
+    background: var(--neu-convex-dome);
+    box-shadow: var(--neu-shadow-sm);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+}
+
+.resizer-vertical:hover::after,
+.resizer-vertical.resizing::after {
+    background: var(--neu-convex-primary);
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+}
+
+.resizer-vertical-sm {
+    width: 10px;
+    cursor: col-resize;
+    background: transparent;
+}
+
+.resizer-vertical-sm::after {
+    content: '';
+    width: 4px;
+    height: 30px;
+    background: var(--neu-convex-dome);
+    box-shadow: var(--neu-shadow-sm);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.resizer-vertical-sm:hover::after,
+.resizer-vertical-sm.resizing::after {
+    background: var(--neu-convex-primary);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+}
+
+.resizer-horizontal {
+    height: 12px;
+    cursor: row-resize;
+    background: transparent;
+}
+
+.resizer-horizontal::after {
+    content: '';
+    width: 38px;
+    height: 4px;
+    background: var(--neu-convex-dome);
+    box-shadow: var(--neu-shadow-sm);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+}
+
+.resizer-horizontal:hover::after,
+.resizer-horizontal.resizing::after {
+    background: var(--neu-convex-primary);
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
+}
+
+.resizer-horizontal-terminal {
+    height: 8px;
+    cursor: row-resize;
+    background: var(--bg-dark);
+    box-shadow: var(--neu-shadow-inset);
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.resizer-horizontal-terminal:hover,
+.resizer-horizontal-terminal.resizing {
+    background: var(--primary-blue);
+}
+
+/* CONVEX DOME BUTTON UTILITIES */
+.btn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-md);
+    background: var(--neu-convex-dome);
+    box-shadow: var(--neu-shadow-sm);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    background: var(--neu-convex-dome-hover);
+    box-shadow: 8px 8px 20px #b5becc, -8px -8px 20px #ffffff;
+    color: var(--primary-blue);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: var(--neu-shadow-inset);
+    background: var(--neu-surface-pressed);
+}
+
+.btn-primary {
+    background: var(--neu-convex-primary);
+    color: #ffffff;
+    box-shadow: 6px 6px 18px #b5becc, -6px -6px 18px #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:hover {
+    color: #ffffff;
+    background: linear-gradient(145deg, #6094ff 0%, #1e40af 100%);
+    box-shadow: 8px 8px 22px rgba(37, 99, 235, 0.45), -8px -8px 22px #ffffff;
+}
+
+.btn-secondary {
+    background: var(--neu-convex-dome);
+    box-shadow: var(--neu-shadow-sm);
+    color: var(--text-main);
+}
+
+.btn-control {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    box-shadow: var(--neu-shadow-sm);
+}
+
+.btn-icon {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    box-shadow: var(--neu-shadow-sm);
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    border-radius: var(--border-radius-sm);
+}
+
+/* STATUS PILLS & BADGES */
+.status-pill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: var(--font-code);
+    box-shadow: var(--neu-shadow-inset);
+}
+
+.status-ready {
+    background: #dde3ec;
+    color: var(--accent-green);
+}
+
+.status-running {
+    background: #dde3ec;
+    color: var(--primary-blue);
+}
+
+.status-error {
+    background: #dde3ec;
+    color: var(--color-swap);
+}
+
+/* EMPTY STATE CARD */
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.88rem;
+    text-align: center;
+    padding: 20px;
+}
+
+.empty-state-card {
+    background: var(--bg-dark);
+    box-shadow: var(--neu-shadow-inset);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   CUSTOM NEUMORPHIC WEBKIT SCROLLBARS (INSET TRACK & CONVEX THUMB)
+   ========================================================================== */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+    box-shadow: inset 3px 3px 7px #b5becc, inset -3px -3px 7px #ffffff;
+    border-radius: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neu-convex-dome);
+    box-shadow: 3px 3px 8px #b5becc, -3px -3px 8px #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--neu-convex-primary);
+    box-shadow: 3px 3px 10px rgba(37, 99, 235, 0.4), -3px -3px 10px #ffffff;
+}
+
+/* CodeMirror Scrollbars Fix */
+.CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler {
+    background: transparent !important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar,
+.CodeMirror-hscrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}

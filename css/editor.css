@@ -1,0 +1,179 @@
+/* ==========================================================================
+   EDITOR CSS - Neumorphic CodeMirror & Scope Inspector Styling (#dde3ec)
+   ========================================================================== */
+
+/* CODE EDITOR CONTAINER (INSET NEUMORPHIC CAVITY) */
+.editor-body {
+    position: relative;
+    background: var(--bg-dark);
+    box-shadow: var(--neu-shadow-inset-deep);
+    border-radius: var(--border-radius-md);
+    flex: 1;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+#code-editor-container {
+    height: 100%;
+    width: 100%;
+    flex: 1;
+    cursor: text;
+    background: transparent !important;
+}
+
+/* Force CodeMirror Theme Background to Match Neumorphic UI (#dde3ec) */
+.cm-s-dracula.CodeMirror,
+.cm-s-dracula .CodeMirror-gutters,
+.cm-s-dracula .CodeMirror-scroll,
+.cm-s-dracula .CodeMirror-sizer,
+.cm-s-dracula .CodeMirror-gutter,
+.cm-s-dracula .CodeMirror-line,
+.CodeMirror,
+.CodeMirror-gutters,
+.CodeMirror-scroll {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.CodeMirror {
+    height: 100% !important;
+    min-height: 280px !important;
+    font-family: var(--font-code) !important;
+    font-size: 0.92rem !important;
+    line-height: 1.6 !important;
+    color: #0f172a !important;
+    cursor: text !important;
+}
+
+.CodeMirror-scroll {
+    min-height: 280px !important;
+}
+
+.CodeMirror-gutters {
+    border-right: 1px solid rgba(181, 190, 204, 0.5) !important;
+}
+
+.CodeMirror-linenumber {
+    color: #64748b !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+}
+
+/* Full High-Contrast Syntax Highlighting for Neumorphic Light Theme (#dde3ec) */
+.cm-s-dracula .CodeMirror-line,
+.cm-s-dracula.CodeMirror,
+.CodeMirror-line {
+    color: #0f172a !important; /* Deep crisp slate for all base text */
+}
+
+/* Colons, Semicolons, Brackets, Operators, Punctuation, Delimiters */
+.cm-s-dracula .cm-punctuation,
+.cm-s-dracula .cm-operator,
+.cm-s-dracula .cm-delimiter,
+.cm-s-dracula .cm-bracket,
+.cm-s-dracula span.cm-operator,
+.cm-s-dracula span.cm-bracket,
+.cm-s-dracula span.cm-punctuation {
+    color: #0284c7 !important; /* Vibrant Cyan-Blue for colons :, ;, (), {}, [] */
+    font-weight: 800 !important;
+}
+
+.cm-s-dracula .cm-keyword { color: #d946ef !important; font-weight: 800 !important; }
+.cm-s-dracula .cm-variable { color: #0f172a !important; font-weight: 700 !important; }
+.cm-s-dracula .cm-variable-2 { color: #2563eb !important; font-weight: 700 !important; }
+.cm-s-dracula .cm-variable-3 { color: #0284c7 !important; font-weight: 700 !important; }
+.cm-s-dracula .cm-number { color: #ea580c !important; font-weight: 800 !important; }
+.cm-s-dracula .cm-string { color: #059669 !important; font-weight: 700 !important; }
+.cm-s-dracula .cm-comment { color: #64748b !important; font-style: italic !important; font-weight: 600 !important; }
+.cm-s-dracula .cm-def { color: #7c3aed !important; font-weight: 800 !important; }
+.cm-s-dracula .cm-property { color: #0284c7 !important; font-weight: 700 !important; }
+.cm-s-dracula .cm-atom { color: #ea580c !important; font-weight: 800 !important; }
+.cm-s-dracula .cm-builtin { color: #2563eb !important; font-weight: 800 !important; }
+
+/* ACTIVE EXECUTION LINE HIGHLIGHT */
+.active-execution-line {
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0.05) 100%) !important;
+    border-left: 4px solid var(--primary-blue) !important;
+    border-radius: 4px;
+    animation: lineGlow 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes lineGlow {
+    from { background-color: rgba(37, 99, 235, 0.14); }
+    to { background-color: rgba(37, 99, 235, 0.28); }
+}
+
+/* SCOPE INSPECTOR CONTAINER (NEUMORPHIC INSET) */
+.scope-body {
+    max-height: 180px;
+    background: var(--bg-dark);
+    box-shadow: var(--neu-shadow-inset);
+    border-radius: var(--border-radius-md);
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+#scope-inspector-container {
+    width: 100%;
+}
+
+/* Scope Table */
+.scope-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-code);
+    font-size: 0.84rem;
+}
+
+.scope-table th {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(181, 190, 204, 0.5);
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.scope-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(181, 190, 204, 0.2);
+}
+
+.var-name {
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.var-type {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+}
+
+.var-val {
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+.var-val.object-ref {
+    color: var(--accent-purple);
+    font-weight: 700;
+}
+
+.var-val.array-val {
+    color: var(--accent-yellow);
+    font-weight: 700;
+}
+
+.var-val.string-val {
+    color: var(--accent-pink);
+}
+
+.var-val.number-val {
+    color: var(--accent-orange);
+}

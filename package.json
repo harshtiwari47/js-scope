@@ -1,0 +1,23 @@
+{
+  "name": "js-scope",
+  "version": "1.0.0",
+  "description": "Interactive JavaScript Code Visualizer built with Neumorphism UI, AST tracing, Call Stack, Heap Memory, Array Sorting, Event Loop, and Object Graph visualizers.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve . -p 3000",
+    "start": "serve ."
+  },
+  "keywords": [
+    "javascript",
+    "visualizer",
+    "code-visualizer",
+    "neumorphism",
+    "ast",
+    "call-stack",
+    "heap-memory",
+    "event-loop",
+    "sorting-visualizer"
+  ],
+  "author": "Harsh Tiwari",
+  "license": "MIT"
+}

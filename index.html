@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS-Scope | Interactive JavaScript Code Visualizer</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CodeMirror Editor Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <!-- App CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/visualizers.css">
+</head>
+<body class="neumorphic-theme">
+    <div id="app" class="app-container">
+        <!-- HEADER TOOLBAR -->
+        <header class="app-header">
+            <div class="brand" title="JS-Scope Interactive Code Visualizer Engine">
+                <div class="brand-icon">
+                    <svg class="brand-logo-svg" viewBox="0 0 44 44" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="44" height="44" rx="14" fill="url(#brand-grad)"/>
+                        <path d="M12 16L20 22L12 28" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="28" cy="28" r="3.5" fill="#38bdf8"/>
+                        <path d="M22 15H30" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="brand-grad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#3b82f6"/>
+                                <stop offset="1" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">
+                        <span class="brand-js">JS</span><span class="brand-scope">Scope</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLS BAR -->
+            <div class="control-panel">
+                <div class="preset-selector">
+                    <label for="example-select"><i class="fa-solid fa-bookmark"></i> Preset Examples:</label>
+                    <select id="example-select" class="custom-select">
+                        <optgroup label="Sorting & Arrays">
+                            <option value="bubbleSort" selected>Bubble Sort Visualizer</option>
+                            <option value="quickSort">Quick Sort & Partitioning</option>
+                            <option value="binarySearch">Binary Search on Sorted Array</option>
+                        </optgroup>
+                        <optgroup label="Call Stack & Recursion">
+                            <option value="recursionFib">Recursion: Fibonacci Sequence</option>
+                            <option value="factorialStack">Recursion: Factorial Stack</option>
+                        </optgroup>
+                        <optgroup label="Event Loop & Async">
+                            <option value="eventLoopAsync">Promises vs setTimeout Event Loop</option>
+                            <option value="asyncAwait">Async / Await Microtasks</option>
+                        </optgroup>
+                        <optgroup label="Memory & Objects">
+                            <option value="closures">Closures & Lexical Scopes</option>
+                            <option value="heapReferences">Object References & Heap</option>
+                            <option value="bstTree">Binary Search Tree Node Graph</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="stepper-controls">
+                    <button id="btn-reset" class="btn btn-secondary" title="Reset Stepper (R)">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                    <button id="btn-prev" class="btn btn-control" title="Step Back (Left Arrow)">
+                        <i class="fa-solid fa-backward-step"></i>
+                    </button>
+                    <button id="btn-play" class="btn btn-primary" title="Play / Pause (Spacebar)">
+                        <i class="fa-solid fa-play"></i> <span id="play-text">Run</span>
+                    </button>
+                    <button id="btn-next" class="btn btn-control" title="Step Forward (Right Arrow)">
+                        <i class="fa-solid fa-forward-step"></i>
+                    </button>
+                </div>
+
+                <div class="speed-control">
+                    <label for="speed-range"><i class="fa-solid fa-gauge-high"></i> Speed:</label>
+                    <input type="range" id="speed-range" min="0.25" max="3" step="0.25" value="1">
+                    <span id="speed-val">1.0x</span>
+                </div>
+
+                <div class="step-indicator-badge">
+                    <span class="badge-label">STEP</span>
+                    <span id="step-count">0 / 0</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="btn-format" class="btn btn-icon" title="Format Code">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+                <button id="btn-help" class="btn btn-icon" title="Help Guide">
+                    <i class="fa-solid fa-circle-question"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="main-workspace">
+            <!-- LEFT PANEL: CODE EDITOR & SCOPE INSPECTOR -->
+            <section class="workspace-panel panel-left">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-code"></i> Code Editor
+                    </div>
+                    <div class="editor-actions">
+                        <span id="execution-status" class="status-pill status-ready">Ready</span>
+                    </div>
+                </div>
+                <div class="panel-body editor-body">
+                    <div id="code-editor-container"></div>
+                </div>
+
+                <!-- DRAGGABLE RESIZER: EDITOR vs SCOPE INSPECTOR -->
+                <div id="resizer-left-panel" class="resizer-gutter resizer-horizontal" title="Drag up/down to resize Editor vs Scope Inspector"></div>
+
+                <!-- SCOPE INSPECTOR -->
+                <div class="panel-header sub-header">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-layer-group"></i> Active Scope Inspector
+                    </div>
+                </div>
+                <div class="panel-body scope-body">
+                    <div id="scope-inspector-container">
+                        <div class="empty-state">Run or step code to inspect local & global variables</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DRAGGABLE RESIZER: LEFT PANEL vs RIGHT PANEL -->
+            <div id="resizer-workspace" class="resizer-gutter resizer-vertical" title="Drag left/right to resize Editor vs Arena panels"></div>
+
+            <!-- RIGHT PANEL: MULTI-TAB VISUALIZATION ARENA -->
+            <section class="workspace-panel panel-right">
+                <div class="tab-navigation">
+                    <button class="tab-btn active" data-tab="tab-memory">
+                        <i class="fa-solid fa-microchip"></i> Stack & Heap Memory
+                    </button>
+                    <button class="tab-btn" data-tab="tab-array">
+                        <i class="fa-solid fa-chart-simple"></i> Array & Sorting Snapshot
+                    </button>
+                    <button class="tab-btn" data-tab="tab-eventloop">
+                        <i class="fa-solid fa-arrows-spin"></i> Event Loop & Async
+                    </button>
+                    <button class="tab-btn" data-tab="tab-graph">
+                        <i class="fa-solid fa-diagram-project"></i> Object / Tree Graph
+                    </button>
+                </div>
+
+                <div class="panel-body arena-body">
+                    <!-- TAB 1: STACK & HEAP MEMORY -->
+                    <div id="tab-memory" class="tab-content active">
+                        <div class="split-memory-view">
+                            <!-- CALL STACK -->
+                            <div class="memory-column call-stack-column">
+                                <div class="section-title">
+                                    <i class="fa-solid fa-bars-staggered"></i> Call Stack
+                                    <span id="stack-count-badge" class="count-badge">0</span>
+                                </div>
+                                <div id="call-stack-container" class="stack-list">
+                                    <div class="empty-state-card">Call stack is empty</div>
+                                </div>
+                            </div>
+
+                            <!-- DRAGGABLE RESIZER: CALL STACK vs HEAP -->
+                            <div id="resizer-memory-split" class="resizer-gutter resizer-vertical-sm" title="Drag left/right to resize Call Stack vs Heap Memory"></div>
+
+                            <!-- HEAP MEMORY -->
+                            <div class="memory-column heap-column">
+                                <div class="section-title">
+                                    <i class="fa-solid fa-cubes"></i> Heap Memory & References
+                                    <span id="heap-count-badge" class="count-badge">0 objects</span>
+                                </div>
+                                <div id="heap-memory-container" class="heap-grid">
+                                    <div class="empty-state-card">No objects in heap</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: ARRAY & SORTING SNAPSHOT -->
+                    <div id="tab-array" class="tab-content">
+                        <div class="array-visualizer-wrapper">
+                            <div class="section-title-bar">
+                                <div class="title">
+                                    <i class="fa-solid fa-chart-column"></i> Active Array Visualization
+                                    <span id="active-array-name" class="array-tag">No Array</span>
+                                </div>
+                                <div class="array-legend">
+                                    <span class="legend-item compare"><span class="dot"></span> Comparing</span>
+                                    <span class="legend-item swap"><span class="dot"></span> Swapping</span>
+                                    <span class="legend-item target"><span class="dot"></span> Pivot/Target</span>
+                                    <span class="legend-item sorted"><span class="dot"></span> Sorted</span>
+                                </div>
+                            </div>
+                            <div id="array-bars-container" class="array-bars-arena">
+                                <div class="empty-state">No array detected in current step execution</div>
+                            </div>
+                            <div id="array-pointers-container" class="array-pointers-bar"></div>
+                            <div id="array-matrix-container" class="array-history-matrix"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: EVENT LOOP -->
+                    <div id="tab-eventloop" class="tab-content">
+                        <div class="event-loop-arena">
+                            <div class="event-loop-top-row">
+                                <!-- CALL STACK DISPLAY -->
+                                <div class="queue-card stack-queue">
+                                    <div class="queue-header">
+                                        <i class="fa-solid fa-layer-group"></i> Call Stack
+                                    </div>
+                                    <div id="el-callstack" class="queue-items">
+                                        <div class="queue-item empty">[Stack Empty]</div>
+                                    </div>
+                                </div>
+
+                                <!-- EVENT LOOP CENTER WHEEL -->
+                                <div class="event-loop-wheel-box">
+                                    <div id="event-loop-spinner" class="spinner-ring">
+                                        <div class="spinner-core">
+                                            <i class="fa-solid fa-rotate"></i>
+                                            <span>EVENT LOOP</span>
+                                        </div>
+                                    </div>
+                                    <div id="el-status-msg" class="el-status-text">Stack active</div>
+                                </div>
+
+                                <!-- WEB API / BACKGROUND -->
+                                <div class="queue-card webapi-queue">
+                                    <div class="queue-header">
+                                        <i class="fa-solid fa-cloud"></i> Web APIs (Async Threads)
+                                    </div>
+                                    <div id="el-webapi" class="queue-items">
+                                        <div class="queue-item empty">No pending async tasks</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="event-loop-bottom-row">
+                                <!-- MICROTASK QUEUE (Promises) -->
+                                <div class="queue-card microtask-queue">
+                                    <div class="queue-header">
+                                        <i class="fa-solid fa-bolt"></i> Microtask Queue (Promises / process.nextTick)
+                                    </div>
+                                    <div id="el-microtasks" class="queue-items">
+                                        <div class="queue-item empty">Microtask Queue empty</div>
+                                    </div>
+                                </div>
+
+                                <!-- TASK QUEUE (setTimeout/Events) -->
+                                <div class="queue-card macrotask-queue">
+                                    <div class="queue-header">
+                                        <i class="fa-solid fa-clock"></i> Task Queue (setTimeout / setInterval)
+                                    </div>
+                                    <div id="el-macrotasks" class="queue-items">
+                                        <div class="queue-item empty">Task Queue empty</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: OBJECT / TREE GRAPH -->
+                    <div id="tab-graph" class="tab-content">
+                        <div class="graph-visualizer-wrapper">
+                            <div class="section-title-bar">
+                                <div class="title">
+                                    <i class="fa-solid fa-diagram-next"></i> Reference & Tree Node Graph
+                                </div>
+                                <div class="graph-info">
+                                    Shows pointer references, binary tree nodes, linked list chains, & heap relationships
+                                </div>
+                            </div>
+                            <div id="graph-canvas-container" class="graph-canvas-box">
+                                <svg id="graph-svg-canvas" width="100%" height="100%"></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- DRAGGABLE RESIZER: TERMINAL HEIGHT -->
+        <div id="resizer-terminal" class="resizer-gutter resizer-horizontal-terminal" title="Drag up/down to resize Console Terminal height"></div>
+
+        <!-- FOOTER / CONSOLE TERMINAL -->
+        <footer class="app-footer">
+            <div class="console-header">
+                <div class="console-title">
+                    <i class="fa-solid fa-terminal"></i> Console Output Log
+                </div>
+                <div class="console-actions">
+                    <button id="btn-clear-console" class="btn btn-sm btn-secondary">
+                        <i class="fa-solid fa-trash-can"></i> Clear Log
+                    </button>
+                    <button id="btn-toggle-console" class="btn btn-sm btn-icon">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="console-output" class="console-body">
+                <div class="console-line system-msg">
+                    <span class="icon"><i class="fa-solid fa-circle-info"></i></span>
+                    <span class="content">JS-Scope Visualizer ready. Click <strong>Run</strong> or press <strong>Right Arrow</strong> to step through code.</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- CodeMirror Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <!-- Acorn AST Parser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.11.3/acorn.min.js"></script>
+
+    <!-- App ES Modules -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
