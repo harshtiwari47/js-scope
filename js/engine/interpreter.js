@@ -354,6 +354,7 @@ export class InterpreterEngine {
 
             if (isFuncOpen && trimmed.includes('function') && trimmed.endsWith('{')) {
                 output += line + '\n';
+                output += 'var __ret_ml = undefined;\n';
                 output += '__pushFrame("' + funcName + '", ' + lineNum + ');\n';
                 output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
                 continue;
@@ -362,6 +363,7 @@ export class InterpreterEngine {
             // --- FUNCTION CLOSE LINE (}) ---
             if (funcCloseLines.has(lineNum) && (trimmed === '}' || trimmed === '};')) {
                 output += '__popFrame();\n';
+                output += 'if (typeof __ret_ml !== "undefined" && __ret_ml !== undefined) return __ret_ml;\n';
                 output += line + '\n';
                 continue;
             }
@@ -372,6 +374,8 @@ export class InterpreterEngine {
                 if (trimmed === 'return;' || trimmed === 'return') {
                     output += '__popFrame();\n';
                     output += 'return;\n';
+                } else if (trimmed.endsWith('{') || trimmed.endsWith('[')) {
+                    output += line.replace(/\breturn\b/, '__ret_ml =') + '\n';
                 } else {
                     let retExpr = trimmed.substring(6).trim();
                     if (retExpr.endsWith(';')) retExpr = retExpr.slice(0, -1);
