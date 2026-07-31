@@ -71,13 +71,9 @@ export function initResizers(editorController) {
 
     if (resizerLeftPanel && editorBody) {
         let isDragging = false;
-        let startY = 0;
-        let startHeight = 0;
 
-        const startDrag = (clientY) => {
+        const startDrag = () => {
             isDragging = true;
-            startY = clientY;
-            startHeight = editorBody.getBoundingClientRect().height;
             resizerLeftPanel.classList.add('resizing');
             document.body.style.cursor = 'row-resize';
             document.body.style.userSelect = 'none';
@@ -85,17 +81,30 @@ export function initResizers(editorController) {
 
         const onMove = (clientY) => {
             if (!isDragging) return;
-            const deltaY = clientY - startY;
-            let newHeight = startHeight + deltaY;
+            const panelLeft = editorBody.parentElement;
+            if (!panelLeft) return;
 
-            const parentHeight = editorBody.parentElement.getBoundingClientRect().height;
-            newHeight = Math.max(120, Math.min(parentHeight - 120, newHeight));
+            const panelRect = panelLeft.getBoundingClientRect();
+            const editorHeader = panelLeft.querySelector('.panel-header');
+            const subHeader = panelLeft.querySelector('.sub-header');
+            const resizerRect = resizerLeftPanel.getBoundingClientRect();
+
+            const editorHeaderH = editorHeader ? editorHeader.getBoundingClientRect().height : 45;
+            const subHeaderH = subHeader ? subHeader.getBoundingClientRect().height : 38;
+            const resizerH = resizerRect.height || 12;
+
+            const availableH = panelRect.height - editorHeaderH - subHeaderH - resizerH - 24;
+
+            let editorH = clientY - panelRect.top - editorHeaderH;
+            editorH = Math.max(90, Math.min(availableH - 50, editorH));
 
             editorBody.style.flex = 'none';
-            editorBody.style.height = `${newHeight}px`;
+            editorBody.style.height = `${editorH}px`;
 
             if (scopeBody) {
-                scopeBody.style.flex = '1';
+                const scopeH = Math.max(50, availableH - editorH);
+                scopeBody.style.flex = 'none';
+                scopeBody.style.height = `${scopeH}px`;
             }
 
             if (editorController && editorController.editor) {
@@ -115,9 +124,15 @@ export function initResizers(editorController) {
             }
         };
 
-        resizerLeftPanel.addEventListener('mousedown', (e) => startDrag(e.clientY));
+        resizerLeftPanel.addEventListener('mousedown', (e) => {
+            startDrag();
+            onMove(e.clientY);
+        });
         resizerLeftPanel.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 0) startDrag(e.touches[0].clientY);
+            if (e.touches.length > 0) {
+                startDrag();
+                onMove(e.touches[0].clientY);
+            }
         });
 
         document.addEventListener('mousemove', (e) => onMove(e.clientY));
