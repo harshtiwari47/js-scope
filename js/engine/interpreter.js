@@ -380,6 +380,16 @@ export class InterpreterEngine {
                 continue;
             }
 
+            // --- INLINE IF + RETURN STATEMENT ---
+            const ifReturnMatch = trimmed.match(/^if\s*\((.*?)\)\s*return\s*(.*?);?$/);
+            if (ifReturnMatch) {
+                output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
+                let retExpr = ifReturnMatch[2] ? ifReturnMatch[2].trim() : 'undefined';
+                if (!retExpr) retExpr = 'undefined';
+                output += 'if (' + ifReturnMatch[1] + ') { var __ret = (' + retExpr + '); __popFrame(); return __ret; }\n';
+                continue;
+            }
+
             // --- FOR / WHILE LOOP (snap INSIDE loop body, runs each iteration) ---
             if ((trimmed.match(/^for\s*\(/) || trimmed.match(/^while\s*\(/)) && trimmed.endsWith('{')) {
                 output += line + '\n';
@@ -412,18 +422,27 @@ export class InterpreterEngine {
         if (!trimmed) return false;
         if (trimmed.startsWith('//')) return false;
         if (trimmed.startsWith('/*') || trimmed.startsWith('*') || trimmed.endsWith('*/')) return false;
-        if (trimmed === '{' || trimmed === '}' || trimmed === '};') return false;
+        if (trimmed === '{' || trimmed === '}' || trimmed === '};' || trimmed === '],') return false;
         if (trimmed === '});') return false;
         if (trimmed === '} else {') return false;
         if (trimmed.match(/^}\s*else\s*{/)) return false;
         if (trimmed.startsWith('function ') && trimmed.endsWith('{')) return false;
         if (trimmed.startsWith('return ')) return false;
         if (trimmed === 'return;') return false;
+        if (trimmed.match(/^if\s*\((.*?)\)\s*return\s*(.*?);?$/)) return false;
         if (trimmed.match(/^for\s*\(/) && trimmed.endsWith('{')) return false;
         if (trimmed.match(/^while\s*\(/) && trimmed.endsWith('{')) return false;
         if (trimmed.match(/^if\s*\(/) && trimmed.endsWith('{')) return false;
         if (trimmed.match(/^}\s*else\s+if\s*\(/) && trimmed.endsWith('{')) return false;
         if (trimmed.startsWith('class ')) return false;
+        
+        // Skip lines that look like object literal properties (key: value)
+        if (trimmed.match(/^[a-zA-Z0-9_"'`]+:\s*/)) return false;
+        // Skip lines that look like array items or standalone commas
+        if (trimmed.match(/^[a-zA-Z0-9_"'`]+,?$/)) {
+            if (trimmed !== 'break' && trimmed !== 'continue') return false;
+        }
+
         return true;
     }
 
