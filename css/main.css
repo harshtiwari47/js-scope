@@ -408,3 +408,61 @@ body {
     width: 8px;
     height: 8px;
 }
+
+/* ==========================================================================
+   NEUMORPHIC ADSENSE & ADVERT SLOT STYLING
+   ========================================================================== */
+.ad-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    box-shadow: var(--neu-shadow-inset);
+    border-radius: var(--border-radius-sm);
+    padding: 6px;
+    margin: 6px 0;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.ad-label {
+    font-size: 0.65rem;
+    font-family: var(--font-code);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+    align-self: flex-start;
+}
+
+.ad-slot {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(221, 227, 236, 0.4);
+    border-radius: 6px;
+}
+
+.footer-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.75rem;
+    font-family: var(--font-ui);
+    font-weight: 600;
+}
+
+.footer-nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-nav-links a:hover {
+    color: var(--primary-blue);
+}

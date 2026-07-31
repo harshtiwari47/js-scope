@@ -3,7 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JS-Scope | Interactive JavaScript Code Visualizer</title>
+    <title>JS-Scope | Interactive JavaScript Code Visualizer & Memory Inspector</title>
+    
+    <!-- Primary Meta Tags -->
+    <meta name="description" content="JS-Scope is an interactive JavaScript execution engine and visualizer. Visualize Call Stack, Heap Memory, Sorting Algorithms, Event Loop Queues, and Object Tree Graphs in real-time.">
+    <meta name="keywords" content="javascript visualizer, code visualizer, call stack visualizer, heap memory visualizer, event loop visualizer, sorting algorithm visualizer, ast tracing, js tutor, developer tools">
+    <meta name="author" content="Harsh Tiwari">
+    <meta name="theme-color" content="#dde3ec">
+    <link rel="canonical" href="https://js-scope.vercel.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://js-scope.vercel.app/">
+    <meta property="og:title" content="JS-Scope | Interactive JavaScript Code Visualizer">
+    <meta property="og:description" content="Visualize JavaScript execution, Call Stack, Heap Memory, Event Loop, and Sorting Algorithms step-by-step in 3D Neumorphism.">
+    <meta property="og:image" content="https://js-scope.vercel.app/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://js-scope.vercel.app/">
+    <meta name="twitter:title" content="JS-Scope | Interactive JavaScript Code Visualizer">
+    <meta name="twitter:description" content="Visualize JavaScript execution, Call Stack, Heap Memory, Event Loop, and Sorting Algorithms step-by-step in 3D Neumorphism.">
+
+    <!-- JSON-LD Structured Data Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "JS-Scope Code Visualizer",
+      "url": "https://js-scope.vercel.app/",
+      "description": "Interactive JavaScript code visualizer and memory inspector with AST execution tracing, call stack frames, heap references, event loop queues, and sorting animations.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "All",
+      "author": {
+        "@type": "Person",
+        "name": "Harsh Tiwari",
+        "url": "https://github.com/harshtiwari47"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <!-- Google AdSense Script Integration Placeholder -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -136,6 +183,16 @@
                 <div class="panel-body scope-body">
                     <div id="scope-inspector-container">
                         <div class="empty-state">Run or step code to inspect local & global variables</div>
+                    </div>
+                </div>
+
+                <!-- NEUMORPHIC ADSENSE AD SLOT 1 -->
+                <div class="ad-container">
+                    <span class="ad-label">Sponsored</span>
+                    <div class="ad-slot">
+                        <!-- Google AdSense Unit Placement -->
+                        <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1234567890" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+                        <span style="font-size:0.75rem;color:#8a99ad;font-family:var(--font-code)">Ad Placement Slot #1</span>
                     </div>
                 </div>
             </section>
@@ -297,11 +354,17 @@
         <!-- DRAGGABLE RESIZER: TERMINAL HEIGHT -->
         <div id="resizer-terminal" class="resizer-gutter resizer-horizontal-terminal" title="Drag up/down to resize Console Terminal height"></div>
 
-        <!-- FOOTER / CONSOLE TERMINAL -->
+        <!-- FOOTER / CONSOLE TERMINAL & ESSENTIAL SEO NAV LINKS -->
         <footer class="app-footer">
             <div class="console-header">
                 <div class="console-title">
                     <i class="fa-solid fa-terminal"></i> Console Output Log
+                </div>
+                <div class="footer-nav-links">
+                    <a href="about.html" target="_blank">About</a>
+                    <a href="privacy.html" target="_blank">Privacy Policy</a>
+                    <a href="terms.html" target="_blank">Terms of Service</a>
+                    <a href="https://github.com/harshtiwari47/js-scope" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
                 </div>
                 <div class="console-actions">
                     <button id="btn-clear-console" class="btn btn-sm btn-secondary">
