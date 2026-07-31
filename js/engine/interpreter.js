@@ -172,7 +172,7 @@ export class InterpreterEngine {
         this.processEventLoopQueues(__snap, __pushFrame, __popFrame, __console, varNames);
 
         // 7. Take a final snapshot of completed execution state
-        __snap(lines.length, {});
+        __snap(this.codeLines.length, {});
 
         return this.snapshots;
     }
