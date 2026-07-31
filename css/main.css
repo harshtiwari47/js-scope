@@ -420,11 +420,18 @@ body {
     background: var(--bg-dark);
     box-shadow: var(--neu-shadow-inset);
     border-radius: var(--border-radius-sm);
-    padding: 6px;
+    padding: 6px 12px;
     margin: 6px 0;
     overflow: hidden;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.ad-top-banner {
+    margin: 10px 20px 0 20px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--neu-shadow-inset);
+    background: var(--bg-dark);
 }
 
 .ad-label {
@@ -440,12 +447,25 @@ body {
 
 .ad-slot {
     width: 100%;
-    min-height: 48px;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(221, 227, 236, 0.4);
-    border-radius: 6px;
+    border-radius: 8px;
+}
+
+.ad-slot-banner {
+    min-height: 44px;
+    color: var(--text-muted);
+    font-family: var(--font-code);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.ad-placeholder-text i {
+    color: var(--primary-blue);
+    margin-right: 6px;
 }
 
 .footer-nav-links {
