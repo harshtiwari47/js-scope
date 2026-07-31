@@ -1,22 +1,94 @@
 /* ==========================================================================
-   ARRAYSNAPSHOT.JS - Array Blocks, Bar Chart & Pointer Visualizer Renderer
+   ARRAYSNAPSHOT.JS - Array Blocks, Bar Chart, Pointer & Target Array Selector
    ========================================================================== */
+
+let userSelectedArray = 'auto';
+let isSelectListenerBound = false;
 
 export function renderArraySnapshot(snapshot) {
     const barsArena = document.getElementById('array-bars-container');
     const pointersBar = document.getElementById('array-pointers-container');
     const arrayNameTag = document.getElementById('active-array-name');
+    const targetSelect = document.getElementById('target-array-select');
 
     if (!barsArena) return;
 
-    if (!snapshot || !snapshot.arrayState || !snapshot.arrayState.values) {
+    // Bind change listener once
+    if (targetSelect && !isSelectListenerBound) {
+        isSelectListenerBound = true;
+        targetSelect.addEventListener('change', (e) => {
+            userSelectedArray = e.target.value;
+            // Re-render with new selection
+            if (window.__lastSnapshot) {
+                renderArraySnapshot(window.__lastSnapshot);
+            }
+        });
+    }
+
+    window.__lastSnapshot = snapshot;
+
+    // Extract all array variables present in active scope
+    const availableArrays = {};
+    if (snapshot && snapshot.scope) {
+        Object.entries(snapshot.scope).forEach(([k, v]) => {
+            if (Array.isArray(v) && v.length > 0 && v.every(item => typeof item === 'number')) {
+                availableArrays[k] = v;
+            }
+        });
+    }
+    if (snapshot && snapshot.arrayState && snapshot.arrayState.allArrays) {
+        Object.entries(snapshot.arrayState.allArrays).forEach(([k, v]) => {
+            if (Array.isArray(v)) availableArrays[k] = v;
+        });
+    }
+
+    // Populate target array select dropdown options
+    if (targetSelect) {
+        const currentOpts = Array.from(targetSelect.options).map(o => o.value);
+        const newArrayKeys = Object.keys(availableArrays);
+
+        let optionsHtml = `<option value="auto" ${userSelectedArray === 'auto' ? 'selected' : ''}>Auto (Default)</option>`;
+        newArrayKeys.forEach(key => {
+            const arrLen = availableArrays[key].length;
+            const isSel = userSelectedArray === key ? 'selected' : '';
+            optionsHtml += `<option value="${key}" ${isSel}>${key} [${arrLen}]</option>`;
+        });
+        targetSelect.innerHTML = optionsHtml;
+    }
+
+    if (!snapshot || (!snapshot.arrayState && Object.keys(availableArrays).length === 0)) {
         barsArena.innerHTML = `<div class="empty-state">No array detected in current step execution</div>`;
         if (pointersBar) pointersBar.innerHTML = '';
         if (arrayNameTag) arrayNameTag.textContent = 'No Array';
         return;
     }
 
-    const { name, values, comparing = [], swapping = [], target = null, sorted = [], pointers = {} } = snapshot.arrayState;
+    // Determine target array to render
+    let name = snapshot.arrayState ? snapshot.arrayState.name : '';
+    let values = snapshot.arrayState ? snapshot.arrayState.values : null;
+    let pointers = snapshot.arrayState ? (snapshot.arrayState.pointers || {}) : {};
+    let comparing = snapshot.arrayState ? (snapshot.arrayState.comparing || []) : [];
+    let swapping = snapshot.arrayState ? (snapshot.arrayState.swapping || []) : [];
+    let target = snapshot.arrayState ? snapshot.arrayState.target : null;
+    let sorted = snapshot.arrayState ? (snapshot.arrayState.sorted || []) : [];
+
+    // If user explicitly picked an array (e.g. 'left', 'right', 'results')
+    if (userSelectedArray !== 'auto' && availableArrays[userSelectedArray]) {
+        name = userSelectedArray;
+        values = availableArrays[userSelectedArray];
+        comparing = [];
+        swapping = [];
+        target = null;
+        sorted = [];
+    }
+
+    if (!values || values.length === 0) {
+        barsArena.innerHTML = `<div class="empty-state">Array "${name}" is empty or not in scope</div>`;
+        if (pointersBar) pointersBar.innerHTML = '';
+        if (arrayNameTag) arrayNameTag.textContent = name ? `${name} [0]` : 'No Array';
+        return;
+    }
+
     if (arrayNameTag) arrayNameTag.textContent = name ? `${name} [${values.length}]` : `arr [${values.length}]`;
 
     const maxVal = Math.max(...values.map(v => typeof v === 'number' ? Math.abs(v) : 1), 10);

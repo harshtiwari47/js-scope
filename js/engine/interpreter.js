@@ -631,9 +631,11 @@ export class InterpreterEngine {
             'searchKey','target'
         ]);
 
+        const allArrays = {};
         for (const [key, val] of Object.entries(vars)) {
             if (key.startsWith('__')) continue;
             if (Array.isArray(val) && val.length > 0 && val.every(v => typeof v === 'number')) {
+                allArrays[key] = [...val];
                 if (!arrayValues) {
                     arrayName = key;
                     arrayValues = [...val];
@@ -717,7 +719,8 @@ export class InterpreterEngine {
             comparing: comparing,
             swapping: swapping,
             target: target,
-            sorted: sorted
+            sorted: sorted,
+            allArrays: allArrays
         };
     }
 

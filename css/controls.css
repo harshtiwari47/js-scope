@@ -133,6 +133,16 @@
     padding: 8px;
 }
 
+.custom-select.select-sm {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: var(--font-code);
+    margin: 0 6px;
+    border-radius: var(--border-radius-sm);
+    color: var(--primary-blue);
+}
+
 /* STEPPER CONTROLS */
 .stepper-controls {
     display: flex;
