@@ -109,12 +109,14 @@
 
 /* SCOPE INSPECTOR CONTAINER (NEUMORPHIC INSET) */
 .scope-body {
-    max-height: 180px;
+    flex: 1;
+    min-height: 80px;
     background: var(--bg-dark);
     box-shadow: var(--neu-shadow-inset);
     border-radius: var(--border-radius-md);
     padding: 10px 14px;
     border: 1px solid rgba(255, 255, 255, 0.6);
+    overflow-y: auto;
 }
 
 #scope-inspector-container {

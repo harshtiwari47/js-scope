@@ -75,9 +75,22 @@ body {
     color: var(--text-main);
     font-family: var(--font-ui);
     font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+body.neumorphic-theme {
     height: 100vh;
     overflow: hidden;
-    line-height: 1.5;
+}
+
+body.standalone-page {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 
 /* App Container Layout */
@@ -97,12 +110,6 @@ body {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-}
-
-@media (max-width: 1200px) {
-    .main-workspace {
-        grid-template-columns: 400px 10px 1fr;
-    }
 }
 
 /* WORKSPACE PANELS (CONVEX DOME EXTRUDED CARDS) */
@@ -485,4 +492,142 @@ body {
 
 .footer-nav-links a:hover {
     color: var(--primary-blue);
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES (MOBILE, TABLET, LAPTOP, TV & 4K)
+   ========================================================================== */
+
+/* 1. TV & 4K ULTRA-WIDE DISPLAYS (> 1920px) */
+@media (min-width: 1920px) {
+    .main-workspace {
+        max-width: 2500px;
+        margin: 0 auto;
+        grid-template-columns: 550px 12px 1fr;
+    }
+    body {
+        font-size: 15px;
+    }
+    .brand-title {
+        font-size: 1.75rem;
+    }
+}
+
+/* 2. LAPTOP & DESKTOP DEFAULTS (1024px - 1920px) */
+@media (max-width: 1280px) {
+    .main-workspace {
+        grid-template-columns: 420px 10px 1fr;
+        padding: 14px 16px;
+    }
+    .ad-top-banner {
+        margin: 8px 16px 0 16px;
+    }
+}
+
+/* 3. TABLETS & SMALL LAPTOPS (768px - 1024px) */
+@media (max-width: 1024px) {
+    body.neumorphic-theme {
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+    .app-container {
+        height: auto !important;
+        min-height: 100vh;
+    }
+    .main-workspace {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 14px;
+        height: auto;
+        overflow: visible;
+    }
+    .workspace-panel {
+        min-height: 340px;
+    }
+    .resizer-vertical {
+        display: none !important;
+    }
+    .app-header {
+        flex-wrap: wrap;
+        padding: 10px 16px;
+    }
+    .control-panel {
+        order: 3;
+        width: 100%;
+        justify-content: space-around;
+        margin-top: 6px;
+    }
+}
+
+/* 4. MOBILE PHONES (< 768px) */
+@media (max-width: 767px) {
+    body.neumorphic-theme {
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+    .app-container {
+        height: auto !important;
+        min-height: 100vh;
+    }
+    .app-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 12px;
+    }
+    .brand {
+        justify-content: center;
+    }
+    .control-panel {
+        flex-direction: column;
+        gap: 10px;
+        border-radius: var(--border-radius-md);
+        padding: 12px;
+    }
+    .stepper-controls {
+        width: 100%;
+        justify-content: center;
+    }
+    .speed-control {
+        width: 100%;
+        justify-content: center;
+    }
+    .main-workspace {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 10px;
+        height: auto;
+        overflow: visible;
+    }
+    .ad-top-banner {
+        margin: 6px 10px 0 10px;
+    }
+    .resizer-vertical,
+    .resizer-vertical-sm {
+        display: none !important;
+    }
+    .split-memory-view {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+    .event-loop-top-row,
+    .event-loop-bottom-row {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+    .app-footer {
+        max-height: none !important;
+        height: auto !important;
+    }
+    .console-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    .footer-nav-links {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
 }
