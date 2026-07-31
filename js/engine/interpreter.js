@@ -103,17 +103,23 @@ export class InterpreterEngine {
                     }
                     return String(a);
                 }).join(' ');
+                const curLine = self.callStack.length > 0 ? self.callStack[self.callStack.length - 1].line : 1;
                 self.logs.push({
                     type: 'log',
                     text: text,
-                    line: self.callStack.length > 0 ? self.callStack[self.callStack.length - 1].line : 0
+                    line: curLine
                 });
+                __snap(curLine, {});
             },
             warn: (...args) => {
-                self.logs.push({ type: 'warn', text: args.join(' '), line: 0 });
+                const curLine = self.callStack.length > 0 ? self.callStack[self.callStack.length - 1].line : 1;
+                self.logs.push({ type: 'warn', text: args.join(' '), line: curLine });
+                __snap(curLine, {});
             },
             error: (...args) => {
-                self.logs.push({ type: 'error', text: args.join(' '), line: 0 });
+                const curLine = self.callStack.length > 0 ? self.callStack[self.callStack.length - 1].line : 1;
+                self.logs.push({ type: 'error', text: args.join(' '), line: curLine });
+                __snap(curLine, {});
             }
         };
 
@@ -165,10 +171,8 @@ export class InterpreterEngine {
         // 6. Post-execution: process event loop queues
         this.processEventLoopQueues(__snap, __pushFrame, __popFrame, __console, varNames);
 
-        // 7. Ensure at least one snapshot exists
-        if (this.snapshots.length === 0) {
-            __snap(1, {});
-        }
+        // 7. Take a final snapshot of completed execution state
+        __snap(lines.length, {});
 
         return this.snapshots;
     }
@@ -363,10 +367,16 @@ export class InterpreterEngine {
             }
 
             // --- RETURN STATEMENT ---
-            if (trimmed.startsWith('return ') || trimmed === 'return;') {
+            if (trimmed.startsWith('return ') || trimmed === 'return;' || trimmed.startsWith('return(')) {
                 output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
-                output += '__popFrame();\n';
-                output += line + '\n';
+                if (trimmed === 'return;' || trimmed === 'return') {
+                    output += '__popFrame();\n';
+                    output += 'return;\n';
+                } else {
+                    let retExpr = trimmed.substring(6).trim();
+                    if (retExpr.endsWith(';')) retExpr = retExpr.slice(0, -1);
+                    output += 'var __ret = (' + retExpr + '); __popFrame(); return __ret;\n';
+                }
                 continue;
             }
 

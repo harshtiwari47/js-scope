@@ -59,6 +59,37 @@ console.log("Sorting array:", data);
 quickSort(data);
 console.log("QuickSorted:", data);`,
 
+    mergeSort: `// Merge Sort Recursive Visualizer
+function mergeSort(arr) {
+    if (arr.length < 2) return arr;
+    
+    const mid = Math.floor(arr.length / 2);
+    const left = arr.slice(0, mid);
+    const right = arr.slice(mid);
+    
+    const leftArr = mergeSort(left);
+    const rightArr = mergeSort(right);
+    
+    return merge(leftArr, rightArr);
+}
+
+function merge(left, right) {
+    const results = [];
+    
+    while (left.length && right.length) {
+        if (left[0] < right[0]) {
+            results.push(left.shift());
+        } else {
+            results.push(right.shift());
+        }
+    }
+    
+    return results.concat(left, right);
+}
+
+const arr = [2, 5, 3, 6, 4, 14, 10, 9];
+console.log("MergeSort Result:", mergeSort(arr));`,
+
     binarySearch: `// Binary Search Visualizer
 function binarySearch(arr, target) {
     let left = 0;
