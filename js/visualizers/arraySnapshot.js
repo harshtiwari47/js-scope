@@ -1,6 +1,8 @@
 /* ==========================================================================
    ARRAYSNAPSHOT.JS - Array Blocks, Bar Chart, Pointer & Target Array Selector
    ========================================================================== */
+import { escapeHtml } from '../utils.js';
+
 
 let userSelectedArray = 'auto';
 let isSelectListenerBound = false;
@@ -51,7 +53,7 @@ export function renderArraySnapshot(snapshot) {
         newArrayKeys.forEach(key => {
             const arrLen = availableArrays[key].length;
             const isSel = userSelectedArray === key ? 'selected' : '';
-            optionsHtml += `<option value="${key}" ${isSel}>${key} [${arrLen}]</option>`;
+            optionsHtml += `<option value="${escapeHtml(key)}" ${isSel}>${escapeHtml(key)} [${arrLen}]</option>`;
         });
         targetSelect.innerHTML = optionsHtml;
     }
@@ -83,7 +85,7 @@ export function renderArraySnapshot(snapshot) {
     }
 
     if (!values || values.length === 0) {
-        barsArena.innerHTML = `<div class="empty-state">Array "${name}" is empty or not in scope</div>`;
+        barsArena.innerHTML = `<div class="empty-state">Array "${escapeHtml(name)}" is empty or not in scope</div>`;
         if (pointersBar) pointersBar.innerHTML = '';
         if (arrayNameTag) arrayNameTag.textContent = name ? `${name} [0]` : 'No Array';
         return;
@@ -110,7 +112,7 @@ export function renderArraySnapshot(snapshot) {
         return `
             <div class="array-bar-card ${stateClass}" data-index="${idx}">
                 <div class="bar-column" style="height: ${heightPct}%;">
-                    ${val}
+                    ${escapeHtml(val)}
                 </div>
                 <div class="bar-index">${idx}</div>
             </div>

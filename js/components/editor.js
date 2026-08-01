@@ -83,7 +83,7 @@ export class CodeEditorController {
         }, 100);
     }
 
-    runTrace() {
+    async runTrace() {
         const code = this.getValue();
         if (!code.trim()) return;
 
@@ -94,7 +94,7 @@ export class CodeEditorController {
         }
 
         try {
-            const snapshots = interpreter.generateTrace(code);
+            const snapshots = await interpreter.generateTraceAsync(code);
             appState.setSnapshots(snapshots);
 
             if (statusPill) {
@@ -103,9 +103,26 @@ export class CodeEditorController {
             }
         } catch (err) {
             console.warn('Trace error:', err);
+            
+            // If it's a timeout error, ensure app stops trying to step
+            if (err.message && err.message.includes('Timeout')) {
+                appState.setSnapshots([{
+                    step: 1,
+                    line: 0,
+                    callStack: [],
+                    scope: {},
+                    heap: {},
+                    arrayState: null,
+                    eventLoop: { status: 'Terminated', microtasks: [], macrotasks: [], webApis: [] },
+                    graph: { nodes: [], links: [] },
+                    logs: [{ type: 'error', text: err.message, line: 0 }]
+                }]);
+            }
+            
             if (statusPill) {
                 statusPill.textContent = 'Error';
                 statusPill.className = 'status-pill status-error';
+                statusPill.title = err.message;
             }
         }
     }

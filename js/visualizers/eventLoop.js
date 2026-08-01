@@ -1,6 +1,8 @@
 /* ==========================================================================
    EVENTLOOP.JS - Event Loop, Web APIs & Async Queues Visualizer
    ========================================================================== */
+import { escapeHtml } from '../utils.js';
+
 
 export function renderEventLoop(snapshot) {
     const elStack = document.getElementById('el-callstack');
@@ -30,7 +32,7 @@ export function renderEventLoop(snapshot) {
     } else {
         elStack.innerHTML = callStack.map(f => `
             <div class="queue-item">
-                <span><i class="fa-solid fa-code" style="font-size:0.7rem;margin-right:4px"></i> ${f.name}</span>
+                <span><i class="fa-solid fa-code" style="font-size:0.7rem;margin-right:4px"></i> ${escapeHtml(f.name)}</span>
                 <span style="color:#5c6b73;font-size:0.75rem">L${f.line}</span>
             </div>
         `).join('');
@@ -44,7 +46,7 @@ export function renderEventLoop(snapshot) {
         } else {
             elWebAPI.innerHTML = webApis.map(w => `
                 <div class="queue-item">
-                    <span><i class="fa-solid fa-clock-rotate-left" style="margin-right:4px"></i> ${w.name}</span>
+                    <span><i class="fa-solid fa-clock-rotate-left" style="margin-right:4px"></i> ${escapeHtml(w.name)}</span>
                     <span style="color:#5c6b73;font-size:0.75rem">${w.delay}ms</span>
                 </div>
             `).join('');
@@ -59,7 +61,7 @@ export function renderEventLoop(snapshot) {
         } else {
             elMicrotasks.innerHTML = microtasks.map(m => `
                 <div class="queue-item">
-                    <span><i class="fa-solid fa-bolt" style="margin-right:4px"></i> ${m.name}</span>
+                    <span><i class="fa-solid fa-bolt" style="margin-right:4px"></i> ${escapeHtml(m.name)}</span>
                 </div>
             `).join('');
         }
@@ -73,7 +75,7 @@ export function renderEventLoop(snapshot) {
         } else {
             elMacrotasks.innerHTML = macrotasks.map(t => `
                 <div class="queue-item">
-                    <span><i class="fa-solid fa-clock" style="margin-right:4px"></i> ${t.name}</span>
+                    <span><i class="fa-solid fa-clock" style="margin-right:4px"></i> ${escapeHtml(t.name)}</span>
                 </div>
             `).join('');
         }

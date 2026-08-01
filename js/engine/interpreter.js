@@ -8,6 +8,41 @@ export class InterpreterEngine {
         this.reset();
     }
 
+    /**
+     * Asynchronously generates a trace using a Web Worker to prevent UI blocking 
+     * and allow strict timeouts (preventing infinite loop browser freezes).
+     */
+    generateTraceAsync(code, timeoutMs = 3000) {
+        return new Promise((resolve, reject) => {
+            // Note: Use absolute or correct relative path to worker depending on context.
+            // Since this runs from index.html, 'js/engine/sandboxWorker.js' should work.
+            const worker = new Worker('js/engine/sandboxWorker.js', { type: 'module' });
+            
+            const timer = setTimeout(() => {
+                worker.terminate();
+                reject(new Error(`Execution Timeout: Code took longer than ${timeoutMs}ms to execute. Infinite loop detected.`));
+            }, timeoutMs);
+
+            worker.onmessage = (e) => {
+                clearTimeout(timer);
+                if (e.data.type === 'success') {
+                    resolve(e.data.snapshots);
+                } else {
+                    reject(new Error(e.data.error));
+                }
+                worker.terminate();
+            };
+
+            worker.onerror = (e) => {
+                clearTimeout(timer);
+                reject(new Error(e.message || 'Worker Error'));
+                worker.terminate();
+            };
+
+            worker.postMessage({ code });
+        });
+    }
+
     reset() {
         this.snapshots = [];
         this.callStack = [];
@@ -234,10 +269,15 @@ export class InterpreterEngine {
     findFunctionBoundaries(code) {
         const results = [];
         try {
-            if (typeof acorn === 'undefined' && typeof window !== 'undefined' && window.acorn) {
-                // acorn loaded globally
+            let parser = null;
+            if (typeof acorn !== 'undefined') {
+                parser = acorn;
+            } else if (typeof window !== 'undefined' && window.acorn) {
+                parser = window.acorn;
+            } else if (typeof self !== 'undefined' && self.acorn) {
+                parser = self.acorn;
             }
-            const parser = (typeof acorn !== 'undefined') ? acorn : (window && window.acorn);
+            
             if (!parser) return results;
 
             const ast = parser.parse(code, {

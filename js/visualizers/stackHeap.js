@@ -1,6 +1,8 @@
 /* ==========================================================================
    STACKHEAP.JS - Call Stack & Heap Memory Renderer
    ========================================================================== */
+import { escapeHtml } from '../utils.js';
+
 
 export function renderStackAndHeap(snapshot) {
     const stackContainer = document.getElementById('call-stack-container');
@@ -40,13 +42,13 @@ export function renderStackAndHeap(snapshot) {
                     if (displayVal.length > 18) displayVal = displayVal.substring(0, 16) + '..';
                 } else displayVal = String(v);
                 if (String(displayVal).length > 18) displayVal = String(displayVal).substring(0, 16) + '..';
-                return `<span class="frame-var-chip"><span class="k">${k}:</span> <span class="v">${displayVal}</span></span>`;
+                return `<span class="frame-var-chip"><span class="k">${escapeHtml(k)}:</span> <span class="v">${escapeHtml(displayVal)}</span></span>`;
             }).join('');
 
             return `
                 <div class="stack-frame-card ${isTop ? 'top-frame' : ''}" style="${isTop ? 'border-left-color: #0284c7; box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);' : ''}">
                     <div class="stack-frame-header">
-                        <span class="func-name">${frame.name} ${isTop ? '<span style="font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#0284c7;color:#fff;margin-left:6px;">TOP</span>' : ''}</span>
+                        <span class="func-name">${escapeHtml(frame.name)} ${isTop ? '<span style="font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#0284c7;color:#fff;margin-left:6px;">TOP</span>' : ''}</span>
                         <span class="func-line">Line ${frame.line}</span>
                     </div>
                     <div class="frame-vars">
@@ -75,7 +77,7 @@ export function renderStackAndHeap(snapshot) {
                 propsHtml = val.map((v, i) => `
                     <div class="heap-prop">
                         <span class="heap-prop-key">[${i}]</span>
-                        <span class="heap-prop-val">${v === null ? 'null' : typeof v === 'object' ? 'ref' : v}</span>
+                        <span class="heap-prop-val">${escapeHtml(v === null ? 'null' : typeof v === 'object' ? 'ref' : v)}</span>
                     </div>
                 `).join('');
             } else if (val && typeof val === 'object') {
@@ -87,8 +89,8 @@ export function renderStackAndHeap(snapshot) {
                     else display = String(v);
                     return `
                         <div class="heap-prop">
-                            <span class="heap-prop-key">${k}</span>
-                            <span class="heap-prop-val">${display}</span>
+                            <span class="heap-prop-key">${escapeHtml(k)}</span>
+                            <span class="heap-prop-val">${escapeHtml(display)}</span>
                         </div>
                     `;
                 }).join('');
@@ -97,8 +99,8 @@ export function renderStackAndHeap(snapshot) {
             return `
                 <div class="heap-object-card">
                     <div class="heap-header">
-                        <span class="heap-addr">${addr}</span>
-                        <span class="heap-type">${item.type}</span>
+                        <span class="heap-addr">${escapeHtml(addr)}</span>
+                        <span class="heap-type">${escapeHtml(item.type)}</span>
                     </div>
                     <div class="heap-props">
                         ${propsHtml || '<span style="color:#5c6b73">empty</span>'}

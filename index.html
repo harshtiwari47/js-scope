@@ -10,6 +10,10 @@
     <meta name="keywords" content="javascript visualizer, code visualizer, call stack visualizer, heap memory visualizer, event loop visualizer, sorting algorithm visualizer, ast tracing, js tutor, developer tools">
     <meta name="author" content="Harsh Tiwari">
     <meta name="theme-color" content="#dde3ec">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data: https:;">
+    
     <link rel="canonical" href="https://js-scope.vercel.app/">
 
     <!-- Open Graph / Facebook -->
@@ -56,10 +60,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha384-t1nt8BQoYMLFN5p42tRAtuAAFQaCQODekUVeKKZrEnEyp4H2R0RHFz0KWpmj7i8g" crossorigin="anonymous">
     <!-- CodeMirror Editor Styles -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" integrity="sha384-zaeBlB/vwYsDRSlFajnDd7OydJ0cWk+c2OWybl3eSUf6hW2EbhlCsQPqKr3gkznT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" integrity="sha384-ccdJwIIg/K0Ab6aXF4MPACh7ckk61tvQFTrfkhXZEALgAETURNZIAuQLcS/aPbrM" crossorigin="anonymous">
     <!-- App CSS Files -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/controls.css">
@@ -368,10 +372,10 @@
                     <i class="fa-solid fa-terminal"></i> Console Output Log
                 </div>
                 <div class="footer-nav-links">
-                    <a href="about.html" target="_blank">About</a>
-                    <a href="privacy.html" target="_blank">Privacy Policy</a>
-                    <a href="terms.html" target="_blank">Terms of Service</a>
-                    <a href="https://github.com/harshtiwari47/js-scope" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
+                    <a href="about.html" target="_blank" rel="noopener noreferrer">About</a>
+                    <a href="privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                    <a href="terms.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+                    <a href="https://github.com/harshtiwari47/js-scope" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i> GitHub</a>
                 </div>
                 <div class="console-actions">
                     <button id="btn-clear-console" class="btn btn-sm btn-secondary">
@@ -405,11 +409,11 @@
     </div>
 
     <!-- CodeMirror Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" integrity="sha384-ZYmwuq4n2gOcNxMSiJ6jyTj+BbIrilr7p6dlq6q5nmSWKmsH9UU4K1qqjycMkfmR" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js" integrity="sha384-g0o+WW9mdIxA7LaaCKTkRm0M5TVT+Bb4s9eocxPsI2G0Xm0POG9iD6G6qP1IIsfS" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js" integrity="sha384-hcxaXyAtJ30s2NeDu1OHWsQRiHiWuYLTbI596+YFb+f2pFhzO0mDuahZziRPPDxg" crossorigin="anonymous"></script>
     <!-- Acorn AST Parser -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.11.3/acorn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/acorn/8.11.3/acorn.min.js" integrity="sha384-UBJ+PIHbfQXlHY8kyExQw89exInn6mDymPpZpWLkUC+MahGs78lUVsoZHVkJK8t+" crossorigin="anonymous"></script>
 
     <!-- App ES Modules -->
     <script type="module" src="js/app.js"></script>
