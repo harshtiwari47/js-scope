@@ -33,7 +33,7 @@ export function renderStackAndHeap(snapshot) {
             const scopeEntries = Object.entries(frame.scope || {}).filter(
                 ([k, v]) => v !== undefined && typeof v !== 'function' && !k.startsWith('__')
             );
-            const varChips = scopeEntries.slice(0, 8).map(([k, v]) => {
+            const varChips = scopeEntries.map(([k, v]) => {
                 let displayVal;
                 if (v === null) displayVal = 'null';
                 else if (Array.isArray(v)) displayVal = `[${v.length}]`;

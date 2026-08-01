@@ -33,7 +33,7 @@ export function renderArraySnapshot(snapshot) {
     const availableArrays = {};
     if (snapshot && snapshot.scope) {
         Object.entries(snapshot.scope).forEach(([k, v]) => {
-            if (Array.isArray(v) && v.length > 0 && v.every(item => typeof item === 'number')) {
+            if (Array.isArray(v)) {
                 availableArrays[k] = v;
             }
         });

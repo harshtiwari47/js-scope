@@ -160,36 +160,91 @@ export class InterpreterEngine {
 
         // Custom setTimeout for event loop visualization
         const __setTimeout = (fn, delay) => {
-            if (typeof delay === 'undefined') delay = 0;
-            const fnName = fn.name || 'callback';
-            self.eventLoopState.webApis.push({
-                name: 'setTimeout(' + fnName + ', ' + delay + 'ms)',
-                delay: delay
-            });
-            self.pendingMacrotasks.push({ name: fnName + '()', fn: fn });
+            const fnName = fn.name || 'anonymous';
+            self.eventLoopState.webApis.push({ name: 'Timer(' + fnName + ', ' + (delay||0) + 'ms)' });
+            self.pendingMacrotasks.push({ name: fnName + '()', fn: fn, delay: delay || 0 });
+            return 1;
         };
 
-        // Custom Promise for event loop visualization
-        const __PromiseResolve = (val) => {
-            return {
-                then: (fn) => {
-                    const fnName = fn.name || 'thenCallback';
-                    self.eventLoopState.microtasks.push({
-                        name: 'Promise.then(' + fnName + ')'
+        class MockPromise {
+            constructor(executor) {
+                this.state = 'pending';
+                this.value = undefined;
+                this.handlers = [];
+                const resolve = (val) => {
+                    if (this.state !== 'pending') return;
+                    this.state = 'fulfilled';
+                    this.value = val;
+                    this.handlers.forEach(h => this.schedule(h.onFulfilled, this.value, h.resolve, h.reject));
+                };
+                const reject = (err) => {
+                    if (this.state !== 'pending') return;
+                    this.state = 'rejected';
+                    this.value = err;
+                    this.handlers.forEach(h => this.schedule(h.onRejected, this.value, h.resolve, h.reject));
+                };
+                if (executor) {
+                    try { executor(resolve, reject); } catch (e) { reject(e); }
+                }
+            }
+            schedule(handler, val, resolve, reject) {
+                if (!handler) {
+                    this.state === 'fulfilled' ? resolve(val) : reject(val);
+                    return;
+                }
+                const fnName = handler.name || 'anonymous';
+                self.eventLoopState.microtasks.push({ name: 'Promise.then(' + fnName + ')' });
+                self.pendingMicrotasks.push({
+                    name: fnName + '()',
+                    fn: () => {
+                        try { resolve(handler(val)); } catch (e) { reject(e); }
+                    },
+                    val: undefined
+                });
+            }
+            then(onFulfilled, onRejected) {
+                return new MockPromise((resolve, reject) => {
+                    if (this.state === 'pending') {
+                        this.handlers.push({ onFulfilled, onRejected, resolve, reject });
+                    } else if (this.state === 'fulfilled') {
+                        this.schedule(onFulfilled, this.value, resolve, reject);
+                    } else {
+                        this.schedule(onRejected, this.value, resolve, reject);
+                    }
+                });
+            }
+            catch(onRejected) { return this.then(null, onRejected); }
+            finally(onFinally) {
+                return this.then(
+                    v => { onFinally(); return v; },
+                    e => { onFinally(); throw e; }
+                );
+            }
+            static resolve(val) {
+                if (val instanceof MockPromise) return val;
+                return new MockPromise(resolve => resolve(val));
+            }
+            static reject(err) { return new MockPromise((resolve, reject) => reject(err)); }
+            static all(iterable) {
+                return new MockPromise((resolve, reject) => {
+                    let arr = Array.from(iterable);
+                    if (arr.length === 0) return resolve([]);
+                    let count = 0, results = new Array(arr.length);
+                    arr.forEach((p, i) => {
+                        MockPromise.resolve(p).then(v => {
+                            results[i] = v;
+                            if (++count === arr.length) resolve(results);
+                        }, reject);
                     });
-                    self.pendingMicrotasks.push({ name: fnName + '()', fn: fn, val: val });
-                    return { then: () => ({}), catch: () => ({}) };
-                },
-                catch: () => ({ then: () => ({}) })
-            };
-        };
-
-        const __Promise = {
-            resolve: __PromiseResolve,
-            reject: () => ({ catch: () => ({}), then: () => ({}) }),
-            all: () => __PromiseResolve([]),
-            race: () => __PromiseResolve(undefined)
-        };
+                });
+            }
+            static race(iterable) {
+                return new MockPromise((resolve, reject) => {
+                    Array.from(iterable).forEach(p => MockPromise.resolve(p).then(resolve, reject));
+                });
+            }
+        }
+        const __Promise = MockPromise;
 
         // 5. Execute instrumented code
         try {
@@ -217,36 +272,62 @@ export class InterpreterEngine {
     // =========================================================================
     collectVarNames(code) {
         const names = new Set();
-        const patterns = [
-            /(?:var|let|const)\s+(\w+)/g,                     // var/let/const name
-            /(?:var|let|const)\s+\[([^\]]+)\]/g,               // destructuring [a,b]
-            /function\s+(\w+)\s*\(/g,                          // function declarations
-        ];
+        try {
+            let parser = null;
+            if (typeof acorn !== 'undefined') {
+                parser = acorn;
+            } else if (typeof window !== 'undefined' && window.acorn) {
+                parser = window.acorn;
+            } else if (typeof self !== 'undefined' && self.acorn) {
+                parser = self.acorn;
+            }
+            if (!parser) return names;
+            
+            const ast = parser.parse(code, { ecmaVersion: 'latest', sourceType: 'script' });
+            
+            const extractPatternNames = (node) => {
+                if (!node) return;
+                if (node.type === 'Identifier') names.add(node.name);
+                else if (node.type === 'ArrayPattern') {
+                    for (const elem of node.elements) extractPatternNames(elem);
+                } else if (node.type === 'ObjectPattern') {
+                    for (const prop of node.properties) {
+                        if (prop.type === 'Property') extractPatternNames(prop.value);
+                        else if (prop.type === 'RestElement') extractPatternNames(prop.argument);
+                    }
+                } else if (node.type === 'RestElement') {
+                    extractPatternNames(node.argument);
+                } else if (node.type === 'AssignmentPattern') {
+                    extractPatternNames(node.left);
+                }
+            };
 
-        for (const pat of patterns) {
-            let m;
-            while ((m = pat.exec(code)) !== null) {
-                if (m[1]) {
-                    // Handle destructuring: split by comma
-                    const parts = m[1].split(',').map(s => s.trim());
-                    for (const p of parts) {
-                        if (/^\w+$/.test(p)) names.add(p);
+            const extractNames = (node) => {
+                if (!node || typeof node !== 'object') return;
+                if (node.type === 'VariableDeclarator') {
+                    extractPatternNames(node.id);
+                } else if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') {
+                    if (node.id) names.add(node.id.name);
+                    for (const param of (node.params || [])) extractPatternNames(param);
+                } else if (node.type === 'CatchClause' && node.param) {
+                    extractPatternNames(node.param);
+                }
+                
+                for (const key of Object.keys(node)) {
+                    if (key === 'loc' || key === 'start' || key === 'end') continue;
+                    const child = node[key];
+                    if (Array.isArray(child)) {
+                        for (const item of child) {
+                            if (item && typeof item === 'object') extractNames(item);
+                        }
+                    } else if (child && typeof child === 'object') {
+                        extractNames(child);
                     }
                 }
-            }
-        }
-
-        // Also extract function parameter names
-        const paramPat = /function\s*\w*\s*\(([^)]*)\)/g;
-        let pm;
-        while ((pm = paramPat.exec(code)) !== null) {
-            const params = pm[1].split(',').map(s => s.trim().split('=')[0].trim());
-            for (const p of params) {
-                if (/^\w+$/.test(p)) names.add(p);
-            }
-        }
-
-        // Remove builtins / reserved
+            };
+            extractNames(ast);
+        } catch(e) {}
+        
         const reserved = new Set([
             'console','Math','Array','Object','Promise','setTimeout','setInterval',
             'undefined','NaN','Infinity','arguments','this','true','false','null',
@@ -259,7 +340,6 @@ export class InterpreterEngine {
             'parseInt','parseFloat','isNaN','isFinite','encodeURI','decodeURI'
         ]);
         for (const r of reserved) names.delete(r);
-
         return names;
     }
 
@@ -305,12 +385,13 @@ export class InterpreterEngine {
 
     walkASTForFunctions(node, results) {
         if (!node || typeof node !== 'object') return;
-        if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression') {
+        if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') {
             if (node.body && node.body.loc) {
                 results.push({
                     name: node.id ? node.id.name : 'anonymous',
                     openBraceLine: node.body.loc.start.line,
-                    closeBraceLine: node.body.loc.end.line,
+                    closeBraceLine: node.body.type === 'BlockStatement' ? node.body.loc.end.line : node.body.loc.start.line,
+                    isExpr: node.body.type !== 'BlockStatement',
                     params: (node.params || []).map(p => p.name || '').filter(Boolean)
                 });
             }
@@ -330,27 +411,55 @@ export class InterpreterEngine {
         }
     }
 
-    // =========================================================================
-    //  CODE INSTRUMENTATION
-    // =========================================================================
     instrumentCode(code, varNames, funcBounds) {
         const lines = code.split('\n');
         const varArr = [...varNames];
 
-        // Build safe IIFE snap expression that captures all variables via try/catch
         const snapExpr = varArr.length > 0
             ? '(function(){var __v={};' + varArr.map(n => 'try{__v.' + n + '=' + n + '}catch(__e){}').join(';') + ';return __v})()'
             : '{}';
 
-        // Build lookup sets for function boundaries
-        const funcOpenLines = new Map(); // line -> funcName
-        const funcCloseLines = new Set();
-        for (const fb of funcBounds) {
-            funcOpenLines.set(fb.openBraceLine, fb.name);
-            if (fb.closeBraceLine) funcCloseLines.add(fb.closeBraceLine);
+        let funcOpens = new Map();
+        let funcCloses = new Set();
+        let returns = new Set();
+        let loopsIfs = new Set();
+        let stmts = new Set();
+
+        let parser = null;
+        if (typeof acorn !== 'undefined') parser = acorn;
+        else if (typeof window !== 'undefined' && window.acorn) parser = window.acorn;
+        else if (typeof self !== 'undefined' && self.acorn) parser = self.acorn;
+        
+        if (parser) {
+            try {
+                const ast = parser.parse(code, { ecmaVersion: 'latest', locations: true, sourceType: 'script' });
+                const walk = (node) => {
+                    if (!node || typeof node !== 'object') return;
+                    if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') {
+                        if (node.body.type === 'BlockStatement') {
+                            funcOpens.set(node.body.loc.start.line, node.id ? node.id.name : 'anonymous');
+                            funcCloses.add(node.body.loc.end.line);
+                        }
+                    } else if (node.type === 'ReturnStatement') {
+                        returns.add(node.loc.start.line);
+                    } else if (node.type === 'ForStatement' || node.type === 'ForInStatement' || node.type === 'ForOfStatement' || node.type === 'WhileStatement' || node.type === 'DoWhileStatement' || node.type === 'IfStatement') {
+                        loopsIfs.add(node.loc.start.line);
+                    } else if (node.type.endsWith('Statement') && node.type !== 'BlockStatement') {
+                        stmts.add(node.loc.start.line);
+                    } else if (node.type === 'VariableDeclaration') {
+                        stmts.add(node.loc.start.line);
+                    }
+                    for (const key of Object.keys(node)) {
+                        if (key === 'loc') continue;
+                        const child = node[key];
+                        if (Array.isArray(child)) child.forEach(walk);
+                        else if (child && typeof child === 'object') walk(child);
+                    }
+                };
+                walk(ast);
+            } catch(e) {}
         }
 
-        // Track class bodies to skip instrumentation inside them
         let inClassBody = false;
         let classBraceDepth = 0;
 
@@ -360,11 +469,9 @@ export class InterpreterEngine {
             let line = lines[i];
             const trimmed = line.trim();
 
-            // --- CLASS BODY TRACKING (skip instrumentation inside class bodies) ---
             if (trimmed.startsWith('class ') && trimmed.includes('{')) {
                 inClassBody = true;
                 classBraceDepth = 0;
-                // Count braces on this line
                 for (const ch of trimmed) {
                     if (ch === '{') classBraceDepth++;
                     if (ch === '}') classBraceDepth--;
@@ -382,112 +489,56 @@ export class InterpreterEngine {
                 continue;
             }
 
-            // --- REPLACE let/const WITH var (for hoisting access in snap) ---
             if (!trimmed.startsWith('//') && !trimmed.startsWith('*') && !trimmed.startsWith('/*')) {
                 line = line.replace(/\blet\b(?=\s)/g, 'var');
                 line = line.replace(/\bconst\b(?=\s)/g, 'var');
             }
 
-            // --- FUNCTION DECLARATION LINE (function name(...) {) ---
-            const isFuncOpen = funcOpenLines.has(lineNum);
-            const funcName = funcOpenLines.get(lineNum);
-
-            if (isFuncOpen && trimmed.includes('function') && trimmed.endsWith('{')) {
-                output += line + '\n';
-                output += 'var __ret_ml = undefined;\n';
-                output += '__pushFrame("' + funcName + '", ' + lineNum + ');\n';
-                output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
-                continue;
+            if (funcOpens.has(lineNum)) {
+                const fnName = funcOpens.get(lineNum);
+                const braceIdx = line.indexOf('{');
+                if (braceIdx !== -1) {
+                    const before = line.substring(0, braceIdx + 1);
+                    const after = line.substring(braceIdx + 1);
+                    output += before + '\nvar __ret_ml = undefined; __pushFrame("' + fnName + '", ' + lineNum + '); __snap(' + lineNum + ', ' + snapExpr + ');\n' + after + '\n';
+                    continue;
+                }
             }
 
-            // --- FUNCTION CLOSE LINE (}) ---
-            if (funcCloseLines.has(lineNum) && (trimmed === '}' || trimmed === '};')) {
-                output += '__popFrame();\n';
-                output += 'if (typeof __ret_ml !== "undefined" && __ret_ml !== undefined) return __ret_ml;\n';
-                output += line + '\n';
-                continue;
+            if (funcCloses.has(lineNum)) {
+                const braceIdx = line.lastIndexOf('}');
+                if (braceIdx !== -1) {
+                    const before = line.substring(0, braceIdx);
+                    const after = line.substring(braceIdx);
+                    output += before + '\n__popFrame(); if (typeof __ret_ml !== "undefined" && __ret_ml !== undefined) return __ret_ml;\n' + after + '\n';
+                    continue;
+                }
             }
 
-            // --- RETURN STATEMENT ---
-            if (trimmed.startsWith('return ') || trimmed === 'return;' || trimmed.startsWith('return(')) {
+            if (returns.has(lineNum)) {
                 output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
                 if (trimmed === 'return;' || trimmed === 'return') {
-                    output += '__popFrame();\n';
-                    output += 'return;\n';
-                } else if (trimmed.endsWith('{') || trimmed.endsWith('[')) {
+                    output += '__popFrame(); return;\n';
+                } else if (trimmed.match(/return\s+\{/) || trimmed.match(/return\s+\[/)) {
                     output += line.replace(/\breturn\b/, '__ret_ml =') + '\n';
                 } else {
-                    let retExpr = trimmed.substring(6).trim();
+                    let retExpr = trimmed.substring(trimmed.indexOf('return') + 6).trim();
                     if (retExpr.endsWith(';')) retExpr = retExpr.slice(0, -1);
                     output += 'var __ret = (' + retExpr + '); __popFrame(); return __ret;\n';
                 }
                 continue;
             }
 
-            // --- INLINE IF + RETURN STATEMENT ---
-            const ifReturnMatch = trimmed.match(/^if\s*\((.*?)\)\s*return\s*(.*?);?$/);
-            if (ifReturnMatch) {
-                output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
-                let retExpr = ifReturnMatch[2] ? ifReturnMatch[2].trim() : 'undefined';
-                if (!retExpr) retExpr = 'undefined';
-                output += 'if (' + ifReturnMatch[1] + ') { var __ret = (' + retExpr + '); __popFrame(); return __ret; }\n';
-                continue;
-            }
-
-            // --- FOR / WHILE LOOP (snap INSIDE loop body, runs each iteration) ---
-            if ((trimmed.match(/^for\s*\(/) || trimmed.match(/^while\s*\(/)) && trimmed.endsWith('{')) {
-                output += line + '\n';
-                output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
-                continue;
-            }
-
-            // --- IF / ELSE IF (snap BEFORE condition, always runs) ---
-            if ((trimmed.match(/^if\s*\(/) || trimmed.match(/^}\s*else\s+if\s*\(/)) && trimmed.endsWith('{')) {
+            if (loopsIfs.has(lineNum) || stmts.has(lineNum)) {
                 output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
                 output += line + '\n';
                 continue;
             }
 
-            // --- REGULAR EXECUTABLE LINE (snap BEFORE) ---
-            if (this.isExecutable(trimmed)) {
-                output += '__snap(' + lineNum + ', ' + snapExpr + ');\n';
-                output += line + '\n';
-                continue;
-            }
-
-            // --- NON-EXECUTABLE (empty, comment, brace, else) ---
             output += line + '\n';
         }
 
         return output;
-    }
-
-    isExecutable(trimmed) {
-        if (!trimmed) return false;
-        if (trimmed.startsWith('//')) return false;
-        if (trimmed.startsWith('/*') || trimmed.startsWith('*') || trimmed.endsWith('*/')) return false;
-        if (trimmed === '{' || trimmed === '}' || trimmed === '};' || trimmed === '],') return false;
-        if (trimmed === '});') return false;
-        if (trimmed === '} else {') return false;
-        if (trimmed.match(/^}\s*else\s*{/)) return false;
-        if (trimmed.startsWith('function ') && trimmed.endsWith('{')) return false;
-        if (trimmed.startsWith('return ')) return false;
-        if (trimmed === 'return;') return false;
-        if (trimmed.match(/^if\s*\((.*?)\)\s*return\s*(.*?);?$/)) return false;
-        if (trimmed.match(/^for\s*\(/) && trimmed.endsWith('{')) return false;
-        if (trimmed.match(/^while\s*\(/) && trimmed.endsWith('{')) return false;
-        if (trimmed.match(/^if\s*\(/) && trimmed.endsWith('{')) return false;
-        if (trimmed.match(/^}\s*else\s+if\s*\(/) && trimmed.endsWith('{')) return false;
-        if (trimmed.startsWith('class ')) return false;
-        
-        // Skip lines that look like object literal properties (key: value)
-        if (trimmed.match(/^[a-zA-Z0-9_"'`]+:\s*/)) return false;
-        // Skip lines that look like array items or standalone commas
-        if (trimmed.match(/^[a-zA-Z0-9_"'`]+,?$/)) {
-            if (trimmed !== 'break' && trimmed !== 'continue') return false;
-        }
-
-        return true;
     }
 
     // =========================================================================
@@ -499,17 +550,19 @@ export class InterpreterEngine {
             ? (function() { var __v = {}; return __v; })
             : (function() { return {}; });
 
-        // Process microtasks first (Promises)
-        if (this.pendingMicrotasks.length > 0) {
-            this.eventLoopState.status = 'Processing Microtask Queue';
-            for (const task of this.pendingMicrotasks) {
-                // Remove from microtask queue
+        this.pendingMacrotasks.sort((a, b) => (a.delay || 0) - (b.delay || 0));
+
+        const drainMicrotasks = () => {
+            while (this.pendingMicrotasks.length > 0) {
+                this.eventLoopState.status = 'Processing Microtask Queue';
+                const task = this.pendingMicrotasks.shift();
+                
                 this.eventLoopState.microtasks = this.eventLoopState.microtasks.filter(
                     m => !m.name.includes(task.name.replace('()', ''))
                 );
+                
                 this.callStack.push({ name: task.name, line: 0, scope: {} });
-
-                // Record snapshot showing task entering call stack
+                
                 this.snapshots.push({
                     step: this.snapshots.length + 1,
                     line: 0,
@@ -522,11 +575,9 @@ export class InterpreterEngine {
                     logs: this.logs.map(l => ({ ...l }))
                 });
 
-                try { task.fn(task.val); } catch(e) {
-                    __console.error(e.message);
-                }
+                try { task.fn(task.val); } catch(e) { __console.error(e.message); }
 
-                if (this.callStack.length > 1) this.callStack.pop();
+                if (this.callStack.length > 0) this.callStack.pop();
 
                 this.snapshots.push({
                     step: this.snapshots.length + 1,
@@ -540,53 +591,48 @@ export class InterpreterEngine {
                     logs: this.logs.map(l => ({ ...l }))
                 });
             }
-            this.pendingMicrotasks = [];
-        }
+        };
 
-        // Process macrotasks (setTimeout callbacks)
-        if (this.pendingMacrotasks.length > 0) {
+        drainMicrotasks();
+
+        while (this.pendingMacrotasks.length > 0) {
             this.eventLoopState.status = 'Processing Task Queue';
-            // Move from webApis to macrotask queue display
+            const task = this.pendingMacrotasks.shift();
+            
             this.eventLoopState.webApis = [];
             this.eventLoopState.macrotasks = this.pendingMacrotasks.map(t => ({ name: t.name }));
 
-            for (const task of this.pendingMacrotasks) {
-                this.eventLoopState.macrotasks = this.eventLoopState.macrotasks.filter(
-                    m => m.name !== task.name
-                );
-                this.callStack.push({ name: task.name, line: 0, scope: {} });
+            this.callStack.push({ name: task.name, line: 0, scope: {} });
 
-                this.snapshots.push({
-                    step: this.snapshots.length + 1,
-                    line: 0,
-                    callStack: this.cloneCallStack(),
-                    scope: {},
-                    heap: this.cloneHeap(),
-                    arrayState: null,
-                    eventLoop: JSON.parse(JSON.stringify(this.eventLoopState)),
-                    graph: { nodes: [], links: [] },
-                    logs: this.logs.map(l => ({ ...l }))
-                });
+            this.snapshots.push({
+                step: this.snapshots.length + 1,
+                line: 0,
+                callStack: this.cloneCallStack(),
+                scope: {},
+                heap: this.cloneHeap(),
+                arrayState: null,
+                eventLoop: JSON.parse(JSON.stringify(this.eventLoopState)),
+                graph: { nodes: [], links: [] },
+                logs: this.logs.map(l => ({ ...l }))
+            });
 
-                try { task.fn(); } catch(e) {
-                    __console.error(e.message);
-                }
+            try { task.fn(); } catch(e) { __console.error(e.message); }
 
-                if (this.callStack.length > 1) this.callStack.pop();
+            if (this.callStack.length > 0) this.callStack.pop();
 
-                this.snapshots.push({
-                    step: this.snapshots.length + 1,
-                    line: 0,
-                    callStack: this.cloneCallStack(),
-                    scope: {},
-                    heap: this.cloneHeap(),
-                    arrayState: null,
-                    eventLoop: JSON.parse(JSON.stringify(this.eventLoopState)),
-                    graph: { nodes: [], links: [] },
-                    logs: this.logs.map(l => ({ ...l }))
-                });
-            }
-            this.pendingMacrotasks = [];
+            this.snapshots.push({
+                step: this.snapshots.length + 1,
+                line: 0,
+                callStack: this.cloneCallStack(),
+                scope: {},
+                heap: this.cloneHeap(),
+                arrayState: null,
+                eventLoop: JSON.parse(JSON.stringify(this.eventLoopState)),
+                graph: { nodes: [], links: [] },
+                logs: this.logs.map(l => ({ ...l }))
+            });
+
+            drainMicrotasks();
         }
 
         this.eventLoopState.status = 'Event Loop Idle';
